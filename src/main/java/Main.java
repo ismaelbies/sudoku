@@ -11,8 +11,9 @@ public class Main {
             {2, 8, 5, 4, 7, 3, 9, 1, 6}
     };
 
-    public static int NUM_THREAD = 11;
+    public static int NUM_THREAD = 27;
     public static boolean[] validaSudoku;
+    public static boolean[] validaSudokuSingleThread;
 
     public static class validaLinha implements Runnable {
         int linha;
@@ -89,10 +90,111 @@ public class Main {
         }
     }
 
-    public static void main(String[] args) {
+    public static class singleThread implements Runnable{
+
+
+        @Override
+        public void run() {
+
+            boolean[] validaCelula;
+            int num;
+            boolean flag = false;
+
+            for (int i = 0; i < 9; i++){
+                validaCelula = new boolean[9];
+                flag = true;
+                for (int j = 0 ; j < 9; j++) {
+                    num = matriz[i][j];
+                    if (num < 1 || num > 9 || validaCelula[num - 1]) {
+                        flag = false;
+
+                    } else if (!validaCelula[num - 1]) {
+                        validaCelula[num - 1] = true;
+                    }
+                }
+                if (flag) {
+                    validaSudokuSingleThread[i] = true;
+                }
+            }
+
+            for (int i = 0; i < 9; i++){
+                validaCelula = new boolean[9];
+                flag = true;
+                for (int j = 0 ; j < 9; j++) {
+                    num = matriz[j][i];
+                    if (num < 1 || num > 9 || validaCelula[num - 1]) {
+                        flag = false;
+
+                    } else if (!validaCelula[num - 1]) {
+                        validaCelula[num - 1] = true;
+                    }
+                }
+                if (flag){
+                    validaSudokuSingleThread[9+i] = true;
+                }
+            }
+
+            int count = 18;
+            for (int i= 0; i < 9; i++){
+                for (int j = 0; j < 9; j++) {
+
+                    if (i %3 ==0 && j%3==0) {
+                        validaCelula = new boolean[9];
+                        flag = true;
+                        for (int l= i; l < i+3; l++) {
+                            for (int c = j; c < j + 3; c++) {
+                                num = matriz[l][c];
+                                if (num < 1 || num > 9 || validaCelula[num - 1]) {
+                                    flag = false;
+                                } else if (!validaCelula[num - 1]) {
+                                    validaCelula[num - 1] = true;
+                                }
+                            }
+
+                        }
+                        if (flag){
+                            validaSudokuSingleThread[count] = true;
+                        }
+                        count++;
+                    }
+                }
+            }
+
+
+        }
+    }
+    
+    public void testeSingleThread(){
         int threadIndex = 0;
         int count = 18;
-        Thread threads[] = new Thread[27];
+        Thread threads[] = new Thread[1];
+        validaSudokuSingleThread = new boolean[27];
+
+        threads [0] = new Thread(new singleThread());
+
+        //starta todas as thread
+        for (int i = 0; i < threads.length; i++){
+            threads[i].start();
+        }
+
+        //join threads
+        for (int i = 0; i < threads.length; i++) {
+            try {
+                threads[i].join();
+            } catch (InterruptedException e) {
+                e.printStackTrace();
+            }
+        }
+
+        //mostra array
+        for (int i = 0; i < validaSudokuSingleThread.length; i++) {
+            System.out.println( i+ ": " + validaSudokuSingleThread[i]);
+        }
+    }
+    public void testeMultiThread(){
+        int threadIndex = 0;
+        int count = 18;
+        Thread threads[] = new Thread[NUM_THREAD];
         validaSudoku = new boolean[27];
 
         //threads das linhas
@@ -131,6 +233,13 @@ public class Main {
         for (int i = 0; i < validaSudoku.length; i++) {
             System.out.println( i+ ": " + validaSudoku[i]);
         }
+    }
+
+    public static void main(String[] args) {
+        Main main = new Main();
+        //main.testeSingleThread();
+        //main.testeMultiThread();
+
     }
 
 }
